@@ -1,0 +1,156 @@
+public virtual int Insert(T dto)
+    {
+
+      IList<SqlParameter> propertiesList = new List<SqlParameter>();
+
+      foreach (var prop in dto.GetType().GetProperties())
+      {
+        var propertyValue = prop.GetValue(dto, null);
+
+        if (propertyValue != null)
+        {
+          SqlParameter sqlParameter = new SqlParameter(prop.Name, propertyValue);
+          propertiesList.Add(sqlParameter);
+        }
+      }
+
+      string procedureName = $"Insert{dto.GetType().Name}_SP";
+
+      return Convert.ToInt32(_database.ExecuteScalar(procedureName, CommandType.StoredProcedure, propertiesList.ToArray())); ;
+    }
+
+
+    -----------
+    reposiroty
+    insert:
+    //int id = Convert.ToInt32(_database.ExecuteScalar("InsertAuthor_SP", CommandType.StoredProcedure,
+//  new SqlParameter("FirstName", dto.FirstName) { SqlDbType = SqlDbType.NVarChar },
+//  new SqlParameter("MiddleName", dto.MiddleName) { SqlDbType = SqlDbType.NVarChar },
+//  new SqlParameter("LastName", dto.LastName) { SqlDbType = SqlDbType.NVarChar }
+//));
+
+
+
+ public void Update(Author dto)
+    {
+      _database.ExecuteScalar("UpdateAuthor_SP", CommandType.StoredProcedure,
+        new SqlParameter("AuthorID", dto.AuthorID) { SqlDbType = SqlDbType.Int },
+        new SqlParameter("FirstName", dto.FirstName) { SqlDbType = SqlDbType.NVarChar },
+        new SqlParameter("MiddleName", dto.MiddleName) { SqlDbType = SqlDbType.NVarChar },
+        new SqlParameter("LastName", dto.LastName) { SqlDbType = SqlDbType.NVarChar }
+      );
+    }
+
+
+
+      public void Delete(int id)
+    {
+      _database.ExecuteScalar("DeleteAuthor_SP", CommandType.StoredProcedure,
+        new SqlParameter("AuthorID", id) { SqlDbType = SqlDbType.Int }
+      );
+    }
+
+
+
+    -------------------
+    using DatabaseHelper;
+using Library.DTO;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Library.Repository
+{
+  public class AuthorsRepository : BaseRepository<Author>
+  {
+    public AuthorsRepository(Database database) : base(database)
+    {
+
+    }
+
+    public override int Insert(Author dto)
+    {
+      return base.Insert(dto);
+    }
+
+    public override void Update(Author dto)
+    {
+      base.Update(dto);
+    }
+
+    public override void Delete(int id)
+    {
+      base.Delete(id);
+    }
+
+    public Author Get(int id, bool readDeleted = false)
+    {
+      var reader = _database.ExecuteReader("GetAuthor_SP", CommandType.StoredProcedure,
+        new SqlParameter("AuthorID", id) { SqlDbType = SqlDbType.Int },
+        new SqlParameter("ReadDeleted", readDeleted) { SqlDbType = SqlDbType.Bit }
+      );
+
+      Author author = new Author();
+
+      if (reader.Read())
+      {
+        author.AuthorID = (int)reader["AuthorID"];
+        author.FirstName = reader["FirstName"] != DBNull.Value ? (string)reader["FirstName"] : null;
+        author.MiddleName = (string)reader["MiddleName"];
+        author.LastName = (string)reader["LastName"];
+        author.IsDeleted = (bool)reader["IsDeleted"];
+        author.CreateDate = (DateTime)reader["CreateDate"];
+      }
+
+      return author;
+    }
+
+    public IEnumerable<Author> Load(bool readDeleted = false)
+    {
+      var reader = _database.ExecuteReader("GetAuthor_SP", CommandType.StoredProcedure,
+        new SqlParameter("ReadDeleted", readDeleted) { SqlDbType = SqlDbType.Bit }
+        );
+
+      List<Author> authors = new List<Author>();
+
+      foreach (IDataRecord record in reader)
+      {
+        Author author = new Author()
+        {
+          AuthorID = (int)record["AuthorID"],
+          FirstName = (string)record["FirstName"],
+          MiddleName = (string)record["MiddleName"],
+          LastName = (string)record["LastName"],
+          IsDeleted = (bool)record["IsDeleted"],
+          CreateDate = (DateTime)record["CreateDate"]
+        };
+
+        authors.Add(author);
+      }
+
+      return authors;
+    }
+  }
+}
+---------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

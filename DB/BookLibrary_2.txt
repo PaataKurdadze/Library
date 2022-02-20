@@ -1,0 +1,1127 @@
+USE [master]
+GO
+/****** Object:  Database [BookLibrary]    Script Date: 11/21/2021 1:13:21 AM ******/
+CREATE DATABASE [BookLibrary]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'BookLibrary', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\BookLibrary.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'BookLibrary_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\BookLibrary_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
+GO
+ALTER DATABASE [BookLibrary] SET COMPATIBILITY_LEVEL = 150
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [BookLibrary].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [BookLibrary] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [BookLibrary] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [BookLibrary] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [BookLibrary] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [BookLibrary] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [BookLibrary] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [BookLibrary] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [BookLibrary] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [BookLibrary] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [BookLibrary] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [BookLibrary] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [BookLibrary] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [BookLibrary] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [BookLibrary] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [BookLibrary] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [BookLibrary] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [BookLibrary] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [BookLibrary] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [BookLibrary] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [BookLibrary] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [BookLibrary] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [BookLibrary] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [BookLibrary] SET RECOVERY FULL 
+GO
+ALTER DATABASE [BookLibrary] SET  MULTI_USER 
+GO
+ALTER DATABASE [BookLibrary] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [BookLibrary] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [BookLibrary] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [BookLibrary] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [BookLibrary] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [BookLibrary] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+EXEC sys.sp_db_vardecimal_storage_format N'BookLibrary', N'ON'
+GO
+ALTER DATABASE [BookLibrary] SET QUERY_STORE = OFF
+GO
+USE [BookLibrary]
+GO
+/****** Object:  UserDefinedFunction [dbo].[CheckInheritance]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[CheckInheritance](@CategoryID int, @ParentID int)
+RETURNS BIT
+
+AS
+BEGIN
+
+    DECLARE @TEMP_CategoryID AS INT, @TEMPCategoryName as nvarchar(50), @CHECK AS BIT
+    SET @CHECK = 'TRUE'
+
+    DECLARE CategoryCursor CURSOR FOR
+        SELECT C.CategoryID, C.CategoryName
+        FROM Categories AS C
+        WHERE @CategoryID = C.ParentID
+
+    OPEN CategoryCursor
+
+    FETCH NEXT FROM CategoryCursor INTO @TEMP_CategoryID, @TEMPCategoryName
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        IF @TEMP_CategoryID = @ParentID
+        BEGIN
+            SET @CHECK = 'FALSE'
+            BREAK
+        END
+        ELSE
+        BEGIN
+            SET @CHECK = dbo.CheckInheritance(@TEMP_CategoryID, @ParentID)
+            IF @CHECK = 'FALSE'
+            BEGIN
+                BREAK
+            END
+        END
+
+
+        FETCH NEXT FROM CategoryCursor INTO @TEMP_CategoryID, @TEMPCategoryName
+    END
+
+    CLOSE CategoryCursor
+    DEALLOCATE CategoryCursor
+
+    RETURN @CHECK
+
+END
+GO
+/****** Object:  UserDefinedFunction [dbo].[GetParentCategoryID]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create function [dbo].[GetParentCategoryID](@CategoryID int)
+returns int
+as
+begin
+    declare @ParentID int = null
+    set @ParentID = (select ParentID from Categories where @CategoryID = CategoryID)
+    return @ParentID
+end
+GO
+/****** Object:  Table [dbo].[Authors]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Authors](
+	[AuthorID] [int] IDENTITY(1,1) NOT NULL,
+	[FirstName] [nvarchar](50) NOT NULL,
+	[MiddleName] [nvarchar](50) NULL,
+	[LastName] [nvarchar](100) NOT NULL,
+	[IsDeleted] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[AuthorID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[BookAuthors]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[BookAuthors](
+	[AuthorID] [int] NOT NULL,
+	[BookID] [int] NOT NULL,
+ CONSTRAINT [PK_BookAuthors] PRIMARY KEY CLUSTERED 
+(
+	[BookID] ASC,
+	[AuthorID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Books]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Books](
+	[BookID] [int] IDENTITY(1,1) NOT NULL,
+	[CategoryID] [int] NOT NULL,
+	[Title] [nvarchar](100) NOT NULL,
+	[PublishingDate] [datetime] NOT NULL,
+	[Publisher] [nvarchar](100) NOT NULL,
+	[Status] [bit] NOT NULL,
+	[Price] [money] NOT NULL,
+	[IsDeleted] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+	[Description] [nvarchar](1000) NULL,
+ CONSTRAINT [PK__Books__3DE0C22700A3D3A6] PRIMARY KEY CLUSTERED 
+(
+	[BookID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Categories]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Categories](
+	[CategoryID] [int] IDENTITY(1,1) NOT NULL,
+	[CategoryName] [nvarchar](50) NOT NULL,
+	[Description] [nvarchar](500) NULL,
+	[ParentID] [int] NULL,
+	[IsDeleted] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CategoryID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Employees]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Employees](
+	[EmployeeID] [int] IDENTITY(1,1) NOT NULL,
+	[FirstName] [nvarchar](30) NOT NULL,
+	[LastName] [nvarchar](50) NOT NULL,
+	[PositionID] [int] NOT NULL,
+	[BirthDate] [datetime] NULL,
+	[HireDate] [datetime] NULL,
+	[HomeAddress] [nvarchar](60) NULL,
+	[PhoneNumber] [nvarchar](50) NULL,
+	[IsDeleted] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+ CONSTRAINT [PK__Employee__7AD04FF1BEDDA84F] PRIMARY KEY CLUSTERED 
+(
+	[EmployeeID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Members]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Members](
+	[MemberID] [int] IDENTITY(1,1) NOT NULL,
+	[FirstName] [nvarchar](30) NOT NULL,
+	[LastName] [nvarchar](50) NOT NULL,
+	[PersonalIDNumber] [nvarchar](50) NULL,
+	[HomeAddress] [nvarchar](100) NULL,
+	[PhoneNumber] [nvarchar](50) NULL,
+	[MembershipStatus] [nvarchar](20) NULL,
+	[IsDeleted] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+ CONSTRAINT [PK__Members__0CF04B3890D86C47] PRIMARY KEY CLUSTERED 
+(
+	[MemberID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Orders]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Orders](
+	[OrderID] [int] IDENTITY(1,1) NOT NULL,
+	[MemberID] [int] NOT NULL,
+	[BookID] [int] NOT NULL,
+	[EmployeeID] [int] NOT NULL,
+	[TakeawayDate] [datetime] NOT NULL,
+	[ReturnDate] [datetime] NOT NULL,
+	[ActualReturnDate] [datetime] NULL,
+	[CreateDate] [datetime] NOT NULL,
+ CONSTRAINT [PK__Orders__C3905BAF3FF9216B] PRIMARY KEY CLUSTERED 
+(
+	[OrderID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Positions]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Positions](
+	[PositionID] [int] NOT NULL,
+	[PositionName] [nvarchar](50) NOT NULL,
+	[Description] [nvarchar](200) NULL,
+	[IsDeleted] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+ CONSTRAINT [PK__Position__60BB9A59C710FEA9] PRIMARY KEY CLUSTERED 
+(
+	[PositionID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Authors] ADD  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Authors] ADD  DEFAULT (getdate()) FOR [CreateDate]
+GO
+ALTER TABLE [dbo].[Books] ADD  CONSTRAINT [DF__Books__IsDeleted__3F466844]  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Books] ADD  CONSTRAINT [DF__Books__CreateDat__403A8C7D]  DEFAULT (getdate()) FOR [CreateDate]
+GO
+ALTER TABLE [dbo].[Categories] ADD  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Categories] ADD  DEFAULT (getdate()) FOR [CreateDate]
+GO
+ALTER TABLE [dbo].[Employees] ADD  CONSTRAINT [DF__Employees__IsDel__4316F928]  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Employees] ADD  CONSTRAINT [DF__Employees__Creat__440B1D61]  DEFAULT (getdate()) FOR [CreateDate]
+GO
+ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [DF__Members__IsDelet__46E78A0C]  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [DF__Members__CreateD__47DBAE45]  DEFAULT (getdate()) FOR [CreateDate]
+GO
+ALTER TABLE [dbo].[Orders] ADD  CONSTRAINT [DF__Orders__CreateDa__4AB81AF0]  DEFAULT (getdate()) FOR [CreateDate]
+GO
+ALTER TABLE [dbo].[Positions] ADD  CONSTRAINT [DF__Positions__IsDel__4D94879B]  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Positions] ADD  CONSTRAINT [DF__Positions__Creat__4E88ABD4]  DEFAULT (getdate()) FOR [CreateDate]
+GO
+ALTER TABLE [dbo].[BookAuthors]  WITH CHECK ADD  CONSTRAINT [FK_BookAuthors_Authors] FOREIGN KEY([AuthorID])
+REFERENCES [dbo].[Authors] ([AuthorID])
+GO
+ALTER TABLE [dbo].[BookAuthors] CHECK CONSTRAINT [FK_BookAuthors_Authors]
+GO
+ALTER TABLE [dbo].[BookAuthors]  WITH CHECK ADD  CONSTRAINT [FK_BookAuthors_Books] FOREIGN KEY([BookID])
+REFERENCES [dbo].[Books] ([BookID])
+GO
+ALTER TABLE [dbo].[BookAuthors] CHECK CONSTRAINT [FK_BookAuthors_Books]
+GO
+ALTER TABLE [dbo].[Books]  WITH CHECK ADD  CONSTRAINT [FK_Books_Categories] FOREIGN KEY([CategoryID])
+REFERENCES [dbo].[Categories] ([CategoryID])
+GO
+ALTER TABLE [dbo].[Books] CHECK CONSTRAINT [FK_Books_Categories]
+GO
+ALTER TABLE [dbo].[Categories]  WITH CHECK ADD  CONSTRAINT [FK_Categories_Categories] FOREIGN KEY([ParentID])
+REFERENCES [dbo].[Categories] ([CategoryID])
+GO
+ALTER TABLE [dbo].[Categories] CHECK CONSTRAINT [FK_Categories_Categories]
+GO
+ALTER TABLE [dbo].[Employees]  WITH CHECK ADD  CONSTRAINT [FK_Employees_Positions] FOREIGN KEY([PositionID])
+REFERENCES [dbo].[Positions] ([PositionID])
+GO
+ALTER TABLE [dbo].[Employees] CHECK CONSTRAINT [FK_Employees_Positions]
+GO
+ALTER TABLE [dbo].[Orders]  WITH CHECK ADD  CONSTRAINT [FK_Orders_Books] FOREIGN KEY([BookID])
+REFERENCES [dbo].[Books] ([BookID])
+GO
+ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [FK_Orders_Books]
+GO
+ALTER TABLE [dbo].[Orders]  WITH CHECK ADD  CONSTRAINT [FK_Orders_Employees] FOREIGN KEY([EmployeeID])
+REFERENCES [dbo].[Employees] ([EmployeeID])
+GO
+ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [FK_Orders_Employees]
+GO
+ALTER TABLE [dbo].[Orders]  WITH CHECK ADD  CONSTRAINT [FK_Orders_Members] FOREIGN KEY([MemberID])
+REFERENCES [dbo].[Members] ([MemberID])
+GO
+ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [FK_Orders_Members]
+GO
+/****** Object:  StoredProcedure [dbo].[DeleteAuthor_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[DeleteAuthor_SP]
+    @AuthorID int
+as
+begin
+    update Authors
+    set IsDeleted = 1
+    where AuthorID = @AuthorID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[DeleteBook_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE procedure [dbo].[DeleteBook_SP]
+    @BookID int
+as
+begin
+    update Books
+    set IsDeleted = 1
+    where BookID = @BookID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[DeleteCategory_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[DeleteCategory_SP]
+    @CategoryID int
+as
+begin
+    update Categories
+    set IsDeleted = 1
+    where CategoryID = @CategoryID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[DeleteEmployee_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[DeleteEmployee_SP]
+@EmployeeID int
+as
+begin
+    update Employees
+    set IsDeleted = 1
+    where EmployeeID = @EmployeeID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[DeleteMember_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[DeleteMember_SP]
+@MemberID int
+as
+begin
+    update Members
+    set IsDeleted = 1
+    where MemberID = @MemberID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[DeletePosition_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[DeletePosition_SP]
+@PositionID int
+as
+begin
+    update Positions
+    set IsDeleted = 1
+    where PositionID = @PositionID;
+end 
+GO
+/****** Object:  StoredProcedure [dbo].[GetAuthor_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE procedure [dbo].[GetAuthor_SP]
+@ID int,
+@ReadDeleted bit = 0
+as
+begin
+    select * from Authors
+    where AuthorID = @ID and (IsDeleted = 0 or @ReadDeleted = 1)
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetAuthors_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE procedure [dbo].[GetAuthors_SP]
+@ReadDeleted bit = 0
+as
+begin
+    select * from Authors
+    where IsDeleted = 0 or @ReadDeleted = 1
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetBook_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+create procedure [dbo].[GetBook_SP]
+@ID int,
+@ReadDeleted bit = 0
+as
+begin
+    select * from Books
+    where BookID = @ID and (IsDeleted = 0 or @ReadDeleted = 1)
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetBooks_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[GetBooks_SP]
+@ReadDeleted bit = 0
+as
+begin
+    select * from Books
+    where IsDeleted = 0 or @ReadDeleted = 1
+end
+
+GO
+/****** Object:  StoredProcedure [dbo].[GetCategories_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[GetCategories_SP]
+@ReadDeleted bit = 0
+as
+begin
+    select * from Categories
+    where IsDeleted = 0 or @ReadDeleted = 1
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetCategory_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE procedure [dbo].[GetCategory_SP]
+@ID int,
+@ReadDeleted bit = 0
+as
+begin
+    select * from Categories
+    where CategoryID = @ID and (IsDeleted = 0 or @ReadDeleted = 1)
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetEmployee_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+create procedure [dbo].[GetEmployee_SP]
+@EmployeeID int,
+@ReadDeleted bit = 0
+as
+begin
+    select * from Employees
+    where EmployeeID = @EmployeeID and (IsDeleted = 0 or @ReadDeleted = 1)
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetEmployees_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[GetEmployees_SP]
+@ReadDeleted bit = 0
+as
+begin
+    select * from Employees
+    where IsDeleted = 0 or @ReadDeleted = 1
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetMember_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+--GETMember procedura, vkitxulobt ert Members tu is washlili ar aris
+
+create procedure [dbo].[GetMember_SP]
+@MemberID int,
+@ReadDeleted bit = 0
+as
+begin
+    select * from Members
+    where MemberID = @MemberID and (IsDeleted = 0 or @ReadDeleted = 1)
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetMembers_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[GetMembers_SP]
+@ReadDeleted bit = 0
+as
+begin
+    select * from Members
+    where IsDeleted = 0 or @ReadDeleted = 1
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetOrder_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE procedure [dbo].[GetOrder_SP]
+@OrderID int
+as
+begin
+    select * from [Orders]
+    where OrderID = @OrderID 
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetOrders_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE procedure [dbo].[GetOrders_SP]
+as
+begin
+    select * from [Orders]
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetPosition_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[GetPosition_SP]
+@PositionID int,
+@ReadeDeleted bit = 0
+as
+begin
+    select * from Positions
+    where PositionID = @PositionID and (IsDeleted = 0 or @ReadeDeleted = 1)
+end
+GO
+/****** Object:  StoredProcedure [dbo].[GetPositions_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[GetPositions_SP]
+@ReadeDeleted bit = 0
+as
+begin
+    select * from Positions
+    where IsDeleted = 0 or @ReadeDeleted = 1;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[InsertAuthor_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE procedure [dbo].[InsertAuthor_SP]
+@FirstName nvarchar (50),
+@MiddleName nvarchar (50) = null,
+@LastName nvarchar (100)
+as
+begin
+    insert into Authors (FirstName, MiddleName, LastName)
+    values (@FirstName, @MiddleName, @LastName);
+
+    select @@IDENTITY as AuthorID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[InsertBook_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[InsertBook_SP]
+    @CategoryID INT,
+    @Title nvarchar(100),
+    @PublishingDate datetime,
+	@Publisher nvarchar(100),
+	@Status bit,
+	@Price money,
+    @Description NVARCHAR(1000) = NULL
+as
+begin
+    insert into Books
+        (CategoryID, Title, PublishingDate, Publisher, [Status], Price, [Description])
+    values
+        (@CategoryID, @Title, @PublishingDate, @Publisher, @Status, @Price, @Description);
+
+    select @@IDENTITY as CategoryID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[InsertCategory_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[InsertCategory_SP]
+@CategoryName nvarchar(50), 
+@Description nvarchar(500),
+@ParentID int = null
+as
+begin
+    insert into Categories (CategoryName, [Description], ParentID)
+    values (@CategoryName, @Description, @ParentID);
+
+    select @@IDENTITY as CategoryID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[InsertEmployee_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[InsertEmployee_SP]
+@FirstName nvarchar(30),
+@LastName nvarchar(50),
+@PositionID int,
+@BirthDate datetime = null,
+@HireDate datetime = null,
+@HomeAddress nvarchar = null,
+@PhoneNumber nvarchar = null
+as
+begin
+    insert into Employees(FirstName, LastName, PositionID, BirthDate, HireDate, HomeAddress, PhoneNumber)
+    values (@FirstName, @LastName, @PositionID, @BirthDate, @HireDate, @HomeAddress, @PhoneNumber);
+
+    select @@IDENTITY as EmployeeID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[InsertMember_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[InsertMember_SP]
+@FirstName nvarchar(30),
+@LastName nvarchar(50),
+@PersonalIDNumber nvarchar(50) = null,
+@HomeAddress nvarchar(100) = null,
+@PhoneNumber nvarchar(50) = null,
+@MembershipStatus nvarchar(20) = null
+as
+begin
+    insert into Members(FirstName, LastName, PersonalIDNumber, HomeAddress, PhoneNumber, MembershipStatus)
+    values (@FirstName, @LastName, @PersonalIDNumber, @HomeAddress, @PhoneNumber, @MembershipStatus);
+
+    select @@IDENTITY as MemberID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[InsertOrder_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE procedure [dbo].[InsertOrder_SP]
+@MemberID int,
+@BookID int, 
+@EmployeeID int,
+@TakeawayDate datetime,
+@ReturnDate datetime,
+@ActualReturnDate datetime = null
+
+as
+begin
+    insert into [Orders](MemberID, BookID, EmployeeID, TakeawayDate, ReturnDate, ActualReturnDate)
+    values (@MemberID, @BookID, @EmployeeID, @TakeawayDate, @ReturnDate, @ActualReturnDate);
+
+    select @@IDENTITY as OrderID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[InsertPosition_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[InsertPosition_SP]
+@PositionName nvarchar(50),
+@Description nvarchar(200) = null
+as
+begin
+    insert into Positions(PositionName, [Description])
+    values (@PositionName, @Description);
+
+    select @@IDENTITY as PositionID;
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateAuthor_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[UpdateAuthor_SP]
+@AuthorID int,
+@FirstName nvarchar (50),
+@MiddleName nvarchar (50) = null,
+@LastName nvarchar (100)
+as
+begin
+    update Authors 
+    set FirstName = @FirstName,
+        MiddleName = @MiddleName,
+        LastName = @LastName
+    where AuthorID = @AuthorID
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateBook_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[UpdateBook_SP]
+    @BookID INT,
+    @CategoryID INT,
+    @Title NVARCHAR(100),
+    @PublishingDate DATETIME,
+    @Publisher NVARCHAR(100),
+    @Status BIT,
+    @Price MONEY,
+    @Description NVARCHAR(1000) = NULL
+AS
+BEGIN
+    UPDATE Books
+    SET [CategoryID] = @CategoryID,
+        [Title] = @Title,
+        [PublishingDate] = @PublishingDate,
+        [Publisher] = @Publisher,
+        [Status] = @Status,
+        [Price] = @Price,
+        [Description] = @Description
+    WHERE BookID = @BOOKID;
+
+    --daadet dacva wriuli kavshiris dasacavad
+
+    RETURN 0;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateCategory_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE procedure [dbo].[UpdateCategory_SP]
+@CategoryID int,
+@CategoryName nvarchar(50), 
+@Description nvarchar(500),
+@ParentID int = null
+as
+begin
+
+    --daadet dacva wriuli kavshiris dasacavad
+    declare @ID as int = @ParentID,
+            @FoundCycle as bit = 0
+    while @ID is not null
+    begin
+        if @ID = @CategoryID
+        begin 
+            set @FoundCycle = 1
+            break
+        end
+        set @ID = (select ParentID from Categories where @ID = CategoryID)
+    end
+    if @FoundCycle = 1
+    begin
+        raiserror('Error in UpdateCategory, cylce detected', 16, 1)
+        return -1
+    end
+    update Categories
+    set CategoryName = @CategoryName,
+        [Description] = @Description,
+        ParentID = @ParentID
+    where CategoryID = @CategoryID;
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateCategory_SP2]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+create procedure [dbo].[UpdateCategory_SP2]
+@CategoryID int,
+@CategoryName nvarchar(50), 
+@Description nvarchar(500),
+@ParentID int = null
+as
+begin
+
+    --daadet dacva wriuli kavshiris dasacavad
+    declare @ID as int = @ParentID,
+            @FoundCycle as bit = 0
+    while @ID is not null
+    begin
+        if @ID = @CategoryID
+        begin 
+            set @FoundCycle = 1
+            break
+        end
+        set @ID = dbo.GetParentCategoryID(@ID)
+    end
+    if @FoundCycle = 1
+    begin
+        raiserror('Error in UpdateCategory, cylce detected', 16, 1)
+        return -1
+    end
+    update Categories
+    set CategoryName = @CategoryName,
+        [Description] = @Description,
+        ParentID = @ParentID
+    where CategoryID = @CategoryID;
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateCategory_SP3]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+CREATE procedure [dbo].[UpdateCategory_SP3]
+    @CategoryID int,
+    @CategoryName nvarchar(50),
+    @Description nvarchar(500) = NULL,
+    @ParentID int = null
+as
+begin
+    DECLARE @CHECK AS BIT
+    SET @CHECK = 'TRUE'
+
+	if @ParentID is not null
+	begin
+		SET @CHECK = [dbo].[CheckInheritance](@CategoryID, @ParentID)
+	end
+    
+    IF @CHECK = 'FALSE'
+    BEGIN
+        PRINT N'შეცვალეთ "ParentID"-ი! ' + '"' + @CategoryName + N'"' + N' ვერ გახდება მისი ქვეკატეგორია!';
+        return -1;
+    END
+    ELSE IF @CHECK = 'TRUE'
+    BEGIN
+        update Categories
+        set CategoryName = @CategoryName,
+        [Description] = @Description,
+        ParentID = @ParentID
+        where CategoryID = @CategoryID;
+
+        return 0;
+    END
+
+END
+
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateCategory2_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+create procedure [dbo].[UpdateCategory2_SP]
+@CategoryID int,
+@CategoryName nvarchar(50), 
+@Description nvarchar(500),
+@ParentID int = null
+as
+begin
+
+    --daadet dacva wriuli kavshiris dasacavad
+    declare @ID as int = @ParentID,
+            @FoundCycle as bit = 0
+    while @ID is not null
+    begin
+        if @ID = @CategoryID
+        begin 
+            set @FoundCycle = 1
+            break
+        end
+        set @ID = dbo.GetParentCategoryID(@ID)
+    end
+    if @FoundCycle = 1
+    begin
+        raiserror('Error in UpdateCategory, cylce detected', 16, 1)
+        return -1
+    end
+    update Categories
+    set CategoryName = @CategoryName,
+        [Description] = @Description,
+        ParentID = @ParentID
+    where CategoryID = @CategoryID;
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateEmployee_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[UpdateEmployee_SP]
+@EmployeeID int,
+@FirstName nvarchar(30),
+@PositionID int,
+@LastName nvarchar(50),
+@BirthDate datetime = null,
+@HireDate datetime = null,
+@HomeAddress nvarchar = null,
+@PhoneNumber nvarchar = null
+as
+begin
+    update Employees 
+    set FirstName = @FirstName,
+        LastName = @LastName,
+		PositionID = @PositionID,
+        BirthDate = @BirthDate,
+        HireDate = @HireDate,
+        HomeAddress = @HomeAddress,
+        PhoneNumber = @PhoneNumber
+    where EmployeeID = @EmployeeID
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateMember_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[UpdateMember_SP]
+@MemberID int,
+@FirstName nvarchar(30),
+@LastName nvarchar(50),
+@PersonalIDNumber nvarchar(50) = null,
+@HomeAddress nvarchar(100) = null,
+@PhoneNumber nvarchar(50) = null,
+@MembershipStatus nvarchar(20) = null
+as
+begin
+    update Members 
+    set FirstName = @FirstName,
+        LastName = @LastName,
+        PersonalIDNumber = @PersonalIDNumber,
+        HomeAddress = @HomeAddress,
+        PhoneNumber = @PhoneNumber,
+        MembershipStatus = @MembershipStatus
+    where MemberID = @MemberID
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[UpdateOrder_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE procedure [dbo].[UpdateOrder_SP]
+@OrderID int,
+@MemberID int,
+@BookID int, 
+@EmployeeID int,
+@TakeawayDate datetime,
+@ReturnDate datetime,
+@ActualReturnDate datetime = null
+
+as
+begin
+    update [Orders]
+    set MemberID = @MemberID,
+	BookID = @BookID, 
+	EmployeeID = @EmployeeID, 
+	TakeawayDate= @TakeawayDate, 
+	ReturnDate = @ReturnDate, 
+	ActualReturnDate = @ActualReturnDate
+	where OrderID = @OrderID
+
+    return 0;
+end
+GO
+/****** Object:  StoredProcedure [dbo].[UpdatePosition_SP]    Script Date: 11/21/2021 1:13:21 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create procedure [dbo].[UpdatePosition_SP]
+@PositionID int,
+@PositionName nvarchar(50),
+@Description nvarchar(200) = null
+as
+begin
+    update Positions
+    set PositionName = @PositionName,
+        [Description] = @Description
+    where PositionID = @PositionID
+
+    return 0;
+end
+
+GO
+USE [master]
+GO
+ALTER DATABASE [BookLibrary] SET  READ_WRITE 
+GO

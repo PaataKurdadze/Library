@@ -1,0 +1,7 @@
+1. shevecadot davasrulot AuthorRepository-s funqciebi (Insertis mixedvit).
+
+shemdegi leqciis gegma 
+1. bazis connectionstring gavitanot config fileshi. +
+2. avawyot vizualuri forma authoris dasamateblad (sheecadet aawyot leqciamde). +
+3. davamatot formidan bazashi authori. +
+4. davamatot yvela classis Repository

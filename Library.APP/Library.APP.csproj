@@ -1,0 +1,257 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{03D1F6A2-0DC2-4715-9DB8-47A656502F5A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Library.APP</RootNamespace>
+    <AssemblyName>Library.APP</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AboutForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutForm.Designer.cs">
+      <DependentUpon>AboutForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AuthorInsert.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AuthorInsert.Designer.cs">
+      <DependentUpon>AuthorInsert.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\AuthorDetails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\AuthorDetails.Designer.cs">
+      <DependentUpon>AuthorDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\BookDetiles.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\BookDetiles.Designer.cs">
+      <DependentUpon>BookDetiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\CategoryDetiles.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\CategoryDetiles.Designer.cs">
+      <DependentUpon>CategoryDetiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\EmploeeDetiles.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\EmploeeDetiles.Designer.cs">
+      <DependentUpon>EmploeeDetiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\AuthorInsert.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\AuthorInsert.Designer.cs">
+      <DependentUpon>AuthorInsert.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\MemberDetiles.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\MemberDetiles.Designer.cs">
+      <DependentUpon>MemberDetiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\OrderDetiles.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\OrderDetiles.Designer.cs">
+      <DependentUpon>OrderDetiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\PositionDetiles.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\PositionDetiles.Designer.cs">
+      <DependentUpon>PositionDetiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LibraryMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LibraryMain.Designer.cs">
+      <DependentUpon>LibraryMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Interfaces\IListForm.cs" />
+    <Compile Include="Lists\AuthorList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Lists\AuthorList.Designer.cs">
+      <DependentUpon>AuthorList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Lists\BookList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Lists\BookList.Designer.cs">
+      <DependentUpon>BookList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Lists\CategoryList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Lists\CategoryList.Designer.cs">
+      <DependentUpon>CategoryList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Lists\EmployeeList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Lists\EmployeeList.Designer.cs">
+      <DependentUpon>EmployeeList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Lists\MemberList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Lists\MemberList.Designer.cs">
+      <DependentUpon>MemberList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Lists\OrdersList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Lists\OrdersList.Designer.cs">
+      <DependentUpon>OrdersList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Lists\PositionsList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Lists\PositionsList.Designer.cs">
+      <DependentUpon>PositionsList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Details\LoginDetiles.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\LoginDetiles.Designer.cs">
+      <DependentUpon>LoginDetiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Details\RegistrationDetiles.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Details\RegistrationDetiles.Designer.cs">
+      <DependentUpon>RegistrationDetiles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reports\ProductReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Reports\ProductReport.Designer.cs">
+      <DependentUpon>ProductReport.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="AboutForm.resx">
+      <DependentUpon>AboutForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AuthorInsert.resx">
+      <DependentUpon>AuthorInsert.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Details\AuthorDetails.resx">
+      <DependentUpon>AuthorDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Details\AuthorInsert.resx">
+      <DependentUpon>AuthorInsert.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LibraryMain.resx">
+      <DependentUpon>LibraryMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Lists\AuthorList.resx">
+      <DependentUpon>AuthorList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Lists\BookList.resx">
+      <DependentUpon>BookList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Lists\CategoryList.resx">
+      <DependentUpon>CategoryList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Lists\EmployeeList.resx">
+      <DependentUpon>EmployeeList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Lists\MemberList.resx">
+      <DependentUpon>MemberList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Lists\OrdersList.resx">
+      <DependentUpon>OrdersList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Lists\PositionsList.resx">
+      <DependentUpon>PositionsList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Details\LoginDetiles.resx">
+      <DependentUpon>LoginDetiles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DatabaseHelper\DatabaseHelper.csproj">
+      <Project>{6c7bf3a0-3c66-40f4-8030-6d5f23504406}</Project>
+      <Name>DatabaseHelper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Library.DTO\Library.DTO.csproj">
+      <Project>{dd78cea2-5f5b-4c3e-a0cf-c1d3cb7879de}</Project>
+      <Name>Library.DTO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Library.Repository\Library.Repository.csproj">
+      <Project>{a42044ba-1e0f-4b3a-804c-3692192b6a8b}</Project>
+      <Name>Library.Repository</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
